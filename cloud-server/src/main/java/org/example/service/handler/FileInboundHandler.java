@@ -20,7 +20,7 @@ public class FileInboundHandler extends ChannelInboundHandlerAdapter {
         byteBuf.release();
 
         if (finished) {
-            PipelineSetup.COMMAND.setup();
+            Factory.getPipelineManager().setup(PipelineSetup.COMMAND);
             ctx.writeAndFlush(new Command(KnownCommands.Ready)).addListener(ChannelFutureListener.FIRE_EXCEPTION_ON_FAILURE);
         }
     }

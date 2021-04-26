@@ -29,7 +29,7 @@ public class FileTransferCommand implements CommandService {
         verifyArgs(ctx, command);
         prepareFileRead(command);
         readyResponse(ctx);
-        PipelineSetup.FILE.setup();
+        Factory.getPipelineManager().setup(PipelineSetup.FILE);
     }
 
     private void verifyArgs(ChannelHandlerContext ctx, Command command) {

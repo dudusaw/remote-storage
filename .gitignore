@@ -2,3 +2,4 @@
 /cloud-client/target/
 /cloud-common-domain/target/
 /netty-server-test/
+/.idea/

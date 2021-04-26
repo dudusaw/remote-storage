@@ -6,6 +6,7 @@ import org.example.service.*;
 import org.example.service.impl.CommandProcessor;
 import org.example.domain.service.impl.FileTransferHelper;
 import org.example.service.impl.NettyServerService;
+import org.example.service.impl.PipelineManager;
 import org.example.service.impl.ServerFileStorage;
 import org.reflections8.Reflections;
 
@@ -40,6 +41,10 @@ public class Factory {
 
     public static FileTransferHelperService getFileTransferService() {
         return FileTransferHelper.Instance;
+    }
+
+    public static PipelineManagerService getPipelineManager() {
+        return PipelineManager.Instance;
     }
 
     private static void constructProperties() {

@@ -50,7 +50,7 @@ public class FileRequestCommand implements CommandService {
              turn into Command mode
              send ready Command
         */
-        PipelineSetup.FILE.setup();
+        Factory.getPipelineManager().setup(PipelineSetup.FILE);
         FileStorageService storageService = Factory.getStorageService();
         Counter counter = new Counter(command.getArgs().length, () -> responseAfterAllWritingDone(ctx));
         for (String arg : command.getArgs()) {
@@ -60,7 +60,7 @@ public class FileRequestCommand implements CommandService {
     }
 
     private void responseAfterAllWritingDone(ChannelHandlerContext ctx) {
-        PipelineSetup.COMMAND.setup();
+        Factory.getPipelineManager().setup(PipelineSetup.COMMAND);
         //Command readyResponse = new Command(KnownCommands.Ready);
         //ctx.writeAndFlush(readyResponse);
     }

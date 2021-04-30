@@ -1,9 +1,9 @@
-package org.example.domain.service.impl;
+package org.example.service.impl;
 
 import io.netty.buffer.ByteBuf;
-import org.example.domain.service.FileStorageService;
-import org.example.domain.service.FileTransferHelperService;
-import org.example.domain.service.VoidFunction;
+import org.example.service.FileStorageService;
+import org.example.service.FileTransferHelperService;
+import org.example.service.VoidFunction;
 
 import java.nio.file.Path;
 import java.util.ArrayDeque;
@@ -45,6 +45,7 @@ public class FileTransferHelper implements FileTransferHelperService {
 
     @Override
     public void triggerReady() {
+        if (waitingForReady.isEmpty()) return;
         waitingForReady.remove().act();
     }
 
@@ -70,11 +71,12 @@ public class FileTransferHelper implements FileTransferHelperService {
             int bytesToNextFile = data.readableBytes();
             fileStorageService.writeToActiveFile(data, bytesToNextFile);
             currentFile.bytes -= bytesToNextFile;
-            if (currentFile.bytes == 0) {
-                fileQueue.poll();
-                fileStorageService.endWriteFile();
-                return fileQueue.isEmpty();
-            }
+        }
+
+        if (currentFile.bytes == 0) {
+            fileQueue.poll();
+            fileStorageService.endWriteFile();
+            return fileQueue.isEmpty();
         }
         return false;
     }

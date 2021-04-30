@@ -5,7 +5,7 @@ import org.example.domain.Command;
 import org.example.domain.KnownCommands;
 import org.example.factory.Factory;
 import org.example.service.CommandService;
-import org.example.domain.service.FileStorageService;
+import org.example.service.FileStorageService;
 
 import java.nio.file.Path;
 import java.nio.file.Paths;

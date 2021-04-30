@@ -1,8 +1,8 @@
-package org.example.domain.service.impl;
+package org.example.service.impl;
 
 import io.netty.buffer.ByteBuf;
 import io.netty.handler.stream.ChunkedFile;
-import org.example.domain.service.FileStorageService;
+import org.example.service.FileStorageService;
 
 import java.io.*;
 import java.nio.file.*;

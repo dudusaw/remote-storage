@@ -1,7 +1,6 @@
 package org.example.service.impl;
 
-import org.example.domain.service.FileStorageService;
-import org.example.domain.service.impl.FileStorage;
+import org.example.service.FileStorageService;
 
 import java.nio.file.Path;
 

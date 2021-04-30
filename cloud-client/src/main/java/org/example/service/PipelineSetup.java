@@ -4,8 +4,8 @@ import io.netty.channel.ChannelHandler;
 import io.netty.handler.codec.serialization.ObjectEncoder;
 import io.netty.handler.stream.ChunkedWriteHandler;
 import org.example.service.impl.MyObjectDecoder;
-import org.example.service.handler.CommandInboundHandler;
-import org.example.service.handler.FileInboundHandler;
+import org.example.service.handler.ClientCommandInboundHandler;
+import org.example.service.handler.ClientFileInboundHandler;
 
 public enum PipelineSetup {
 
@@ -13,12 +13,12 @@ public enum PipelineSetup {
     COMMAND(
             ObjectEncoder.class,
             MyObjectDecoder.class,
-            CommandInboundHandler.class
+            ClientCommandInboundHandler.class
     ),
     FILE(
             ObjectEncoder.class,
             ChunkedWriteHandler.class,
-            FileInboundHandler.class
+            ClientFileInboundHandler.class
     ),
     ;
 

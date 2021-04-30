@@ -5,7 +5,7 @@ import org.example.domain.Command;
 import org.example.domain.KnownCommands;
 import org.example.factory.Factory;
 import org.example.service.CommandService;
-import org.example.domain.service.FileTransferHelperService;
+import org.example.service.FileTransferHelperService;
 import org.example.service.PipelineSetup;
 
 import java.nio.file.Path;
@@ -27,9 +27,9 @@ public class FileTransferCommand implements CommandService {
     @Override
     public void processCommand(ChannelHandlerContext ctx, Command command) {
         verifyArgs(ctx, command);
+        Factory.getPipelineManager().setup(PipelineSetup.FILE.handlers);
         prepareFileRead(command);
         readyResponse(ctx);
-        Factory.getPipelineManager().setup(PipelineSetup.FILE);
     }
 
     private void verifyArgs(ChannelHandlerContext ctx, Command command) {

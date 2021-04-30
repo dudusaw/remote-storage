@@ -1,4 +1,4 @@
-package org.example.domain.service;
+package org.example.service;
 
 @FunctionalInterface
 public interface VoidFunction {

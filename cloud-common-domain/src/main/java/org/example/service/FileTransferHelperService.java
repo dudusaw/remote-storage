@@ -1,4 +1,4 @@
-package org.example.domain.service;
+package org.example.service;
 
 import io.netty.buffer.ByteBuf;
 
@@ -17,7 +17,7 @@ public interface FileTransferHelperService {
     void queueReadyCallback(VoidFunction action);
 
     /**
-     * Executes next action in queue, throws an exception if there's none
+     * Executes next action in queue if there are any
      */
     void triggerReady();
 

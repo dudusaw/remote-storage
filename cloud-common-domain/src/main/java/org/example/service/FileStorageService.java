@@ -1,9 +1,8 @@
-package org.example.domain.service;
+package org.example.service;
 
 import io.netty.buffer.ByteBuf;
 import io.netty.handler.stream.ChunkedFile;
 
-import java.io.InputStream;
 import java.nio.file.Path;
 
 public interface FileStorageService {

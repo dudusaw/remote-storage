@@ -5,19 +5,16 @@
 <?import javafx.scene.layout.*?>
 <?import javafx.scene.text.*?>
 
-<AnchorPane prefHeight="500.0" prefWidth="600.0" xmlns="http://javafx.com/javafx/11.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.example.PrimaryController">
+<AnchorPane minHeight="200.0" minWidth="200.0" prefHeight="650.0" prefWidth="500.0" xmlns="http://javafx.com/javafx/11.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.example.PrimaryController">
    <children>
-      <ImageView fx:id="loadingImage" fitHeight="70.0" fitWidth="70.0" pickOnBounds="true" preserveRatio="true" AnchorPane.leftAnchor="265.0" AnchorPane.topAnchor="215.0" />
-      <Label fx:id="statusBar" alignment="CENTER" prefHeight="50.0" prefWidth="500.0" text="Status bar" AnchorPane.leftAnchor="50.0" AnchorPane.topAnchor="35.0">
+      <Label fx:id="statusBar" alignment="CENTER" prefHeight="67.0" prefWidth="440.0" text="Status bar" AnchorPane.leftAnchor="30.0" AnchorPane.rightAnchor="30.0" AnchorPane.topAnchor="35.0">
          <font>
-            <Font name="Segoe UI" size="24.0" />
+            <Font name="Segoe UI" size="20.0" />
          </font>
       </Label>
-      <AnchorPane prefHeight="500.0" prefWidth="600.0">
+      <AnchorPane fx:id="controlPane" prefHeight="650.0" prefWidth="500.0">
          <children>
-            <TreeView fx:id="treeViewClient" prefHeight="380.0" prefWidth="240.0" AnchorPane.bottomAnchor="20.0" AnchorPane.leftAnchor="20.0" />
-            <TreeView fx:id="treeViewServer" prefHeight="380.0" prefWidth="240.0" AnchorPane.bottomAnchor="20.0" AnchorPane.rightAnchor="20.0" />
-            <MenuBar fx:id="menuBar" prefHeight="25.0" prefWidth="600.0" AnchorPane.leftAnchor="0.0" AnchorPane.topAnchor="0.0">
+            <MenuBar fx:id="menuBar" prefHeight="25.0" prefWidth="500.0" AnchorPane.leftAnchor="0.0" AnchorPane.topAnchor="0.0">
               <menus>
                 <Menu mnemonicParsing="false" text="File">
                   <items>
@@ -36,7 +33,14 @@
                 </Menu>
               </menus>
             </MenuBar>
+            <ListView fx:id="listView" layoutX="37.0" layoutY="243.0" onContextMenuRequested="#onContextMenu" prefHeight="425.0" prefWidth="460.0" AnchorPane.bottomAnchor="20.0" AnchorPane.leftAnchor="20.0" AnchorPane.rightAnchor="20.0" />
+            <Label fx:id="pathLabel" layoutX="20.0" layoutY="169.0" prefHeight="25.0" prefWidth="460.0" text="Current path">
+               <font>
+                  <Font name="Segoe UI Bold" size="14.0" />
+               </font>
+            </Label>
          </children>
       </AnchorPane>
+      <ImageView fx:id="loadingImage" fitHeight="60.0" fitWidth="60.0" layoutX="235.0" pickOnBounds="true" preserveRatio="true" AnchorPane.leftAnchor="225.0" AnchorPane.topAnchor="110.0" />
    </children>
 </AnchorPane>

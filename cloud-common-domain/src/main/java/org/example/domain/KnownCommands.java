@@ -7,7 +7,9 @@ public enum KnownCommands {
     FileRequest("/reqf"),
     CreateDirectory("/cdir"),
     Delete("/delete"),
-    FileStructureRequest("/reqfs");
+    FileStructureRequest("/reqfs"),
+    LocalStructureRequest("/reqlocal"),
+    Move("/mv");
 
     public final String name;
 

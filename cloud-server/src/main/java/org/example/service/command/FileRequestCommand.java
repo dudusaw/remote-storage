@@ -6,14 +6,10 @@ import org.example.domain.Command;
 import org.example.domain.KnownCommands;
 import org.example.factory.Factory;
 import org.example.service.CommandService;
-import org.example.domain.service.FileStorageService;
+import org.example.service.FileStorageService;
 import org.example.service.PipelineSetup;
-import org.example.domain.service.VoidFunction;
+import org.example.service.VoidFunction;
 
-import java.io.File;
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
 import java.nio.file.Paths;
 
 public class FileRequestCommand implements CommandService {
@@ -50,7 +46,7 @@ public class FileRequestCommand implements CommandService {
              turn into Command mode
              send ready Command
         */
-        Factory.getPipelineManager().setup(PipelineSetup.FILE);
+        Factory.getPipelineManager().setup(PipelineSetup.FILE.handlers);
         FileStorageService storageService = Factory.getStorageService();
         Counter counter = new Counter(command.getArgs().length, () -> responseAfterAllWritingDone(ctx));
         for (String arg : command.getArgs()) {
@@ -60,7 +56,7 @@ public class FileRequestCommand implements CommandService {
     }
 
     private void responseAfterAllWritingDone(ChannelHandlerContext ctx) {
-        Factory.getPipelineManager().setup(PipelineSetup.COMMAND);
+        Factory.getPipelineManager().setup(PipelineSetup.COMMAND.handlers);
         //Command readyResponse = new Command(KnownCommands.Ready);
         //ctx.writeAndFlush(readyResponse);
     }
@@ -74,6 +70,9 @@ public class FileRequestCommand implements CommandService {
         private final VoidFunction action;
 
         public Counter(int amount, VoidFunction action) {
+            assert amount > 0;
+            assert action != null;
+
             this.amount = amount;
             this.action = action;
         }

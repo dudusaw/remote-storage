@@ -8,7 +8,6 @@ import io.netty.channel.EventLoopGroup;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioServerSocketChannel;
-import org.example.service.PipelineManagerService;
 import org.flywaydb.core.Flyway;
 import org.example.service.PipelineSetup;
 import org.example.service.ServerService;
@@ -43,9 +42,8 @@ public class NettyServerService implements ServerService {
                     .childHandler(new ChannelInitializer<SocketChannel>() {
                         @Override
                         protected void initChannel(SocketChannel channel) {
-                            PipelineManagerService pipelineManagerService = Factory.getPipelineManager();
-                            pipelineManagerService.setPipeline(channel.pipeline());
-                            pipelineManagerService.setup(PipelineSetup.COMMAND);
+                            Factory.getPipelineManager().setPipeline(channel.pipeline());
+                            Factory.getPipelineManager().setup(PipelineSetup.COMMAND.handlers);
                         }
                     });
             Properties prop = Factory.getConfigProperties();

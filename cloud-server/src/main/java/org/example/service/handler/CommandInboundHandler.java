@@ -8,6 +8,7 @@ import org.example.factory.Factory;
 public class CommandInboundHandler extends SimpleChannelInboundHandler<Command> {
     @Override
     protected void channelRead0(ChannelHandlerContext ctx, Command command) throws Exception {
+        System.out.println("Command received: " + command.getCommandName());
         Factory.getCommandProcessor().processCommand(ctx, command);
     }
 }

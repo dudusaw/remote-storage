@@ -1,71 +1,363 @@
 package org.example;
 
-import java.io.IOException;
-import java.net.URL;
-import java.util.ResourceBundle;
-
-import javafx.event.Event;
+import io.netty.handler.stream.ChunkedFile;
+import javafx.application.Platform;
+import javafx.collections.ObservableList;
+import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
-import javafx.event.EventType;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.Node;
 import javafx.scene.control.*;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
-import javafx.scene.input.MouseButton;
-import javafx.scene.input.MouseEvent;
+import javafx.scene.input.*;
+import javafx.scene.layout.AnchorPane;
 import javafx.scene.text.Text;
+import javafx.stage.DirectoryChooser;
+import org.example.domain.Command;
+import org.example.domain.KnownCommands;
+import org.example.factory.Factory;
+import org.example.service.*;
 
-public class PrimaryController implements Initializable {
+import java.io.File;
+import java.io.IOException;
+import java.net.URL;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.*;
 
+public class PrimaryController implements Initializable, ControllerService {
+
+    @FXML
+    public ListView<String> listView;
+    @FXML
+    public Label pathLabel;
+    @FXML
+    public AnchorPane controlPane;
     @FXML
     private ImageView loadingImage;
-    @FXML
-    private javafx.scene.control.TreeView treeViewClient;
-    @FXML
-    private javafx.scene.control.TreeView treeViewServer;
     @FXML
     private MenuBar menuBar;
     @FXML
     private Label statusBar;
 
+    private Map<String, Long> shownItems;
+    private DoubleClickChecker clickChecker;
+    private Path currentPath;
+    private ContextMenu lastOpenedMenu;
+
+    private final static String backMark = "..";
+
     @Override
     public void initialize(URL location, ResourceBundle resources) {
+        Factory.setControllerService(this);
+
+        shownItems = new HashMap<>();
+        clickChecker = new DoubleClickChecker(500);
+        currentPath = Paths.get("");
+
         loadingImage.setImage(new Image("Ellipsis-3s-200px.gif"));
         loadingImage.setVisible(false);
 
-//        TreeItem<String> root = new TreeItem<>("Root node");
-//        root.getChildren().addAll(
-//                new TreeItem<>("Item1"),
-//                new TreeItem<>("Item2"),
-//                new TreeItem<>("Item3")
-//                );
-//        TreeView.setCellFactory(param -> {
-//            TreeCell<String> cell = new TreeCell<String>() {
-//                @Override
-//                protected void updateItem(String item, boolean empty) {
-//                    super.updateItem(item, empty);
-//                    Label lab = new Label(item);
-//                    setGraphic(lab);
-//                }
-//            };
-//            cell.setOnMouseClicked(event -> {
-//                Node node = event.getPickResult().getIntersectedNode();
-//                if (node != cell) return;
-//                if (cell.getText() != null) {
-//                    ContextMenu menu = new ContextMenu();
-//                    menu.getItems().addAll(
-//                            new MenuItem("asd1"),
-//                            new MenuItem("asd2"),
-//                            new MenuItem("asd3")
-//                    );
-//                    menu.show(event.getPickResult().getIntersectedNode(), event.getScreenX(), event.getScreenY());
-//                    menu.setAutoHide(true);
-//                }
-//            });
-//            return cell;
-//        });
-//        TreeView.setRoot(root);
+        setupListView();
+
+        NetworkService networkService = Factory.getNetworkService();
+        networkService.sendCommand(new Command(KnownCommands.LocalStructureRequest));
+    }
+
+    private void setupListView() {
+        listView.getSelectionModel().setSelectionMode(SelectionMode.MULTIPLE);
+        listView.setOnMouseClicked(this::onMouseClicked);
+        listView.setOnDragOver(new EventHandler<DragEvent>() {
+            @Override
+            public void handle(DragEvent event) {
+                if (event.getGestureSource() != listView && event.getDragboard().hasFiles()) {
+                    event.acceptTransferModes(TransferMode.COPY_OR_MOVE);
+                }
+                event.consume();
+            }
+        });
+        listView.setOnDragDropped(new EventHandler<DragEvent>() {
+            @Override
+            public void handle(DragEvent event) {
+                Dragboard db = event.getDragboard();
+                boolean success = false;
+                if (db.hasFiles()) {
+                    System.out.println(db.getFiles());
+                    sendFilesToActivePath(db.getFiles());
+                    success = true;
+                }
+                event.setDropCompleted(success);
+                event.consume();
+            }
+        });
+    }
+
+    private void sendFilesToActivePath(List<File> files) {
+        try {
+            FileTransferHelperService transferHelperService = Factory.getFileTransferService();
+            NetworkService networkService = Factory.getNetworkService();
+            List<String> list = new ArrayList<>();
+            List<ChunkedFile> chunkedFiles = new ArrayList<>();
+            for (File file : files) {
+                Path fileRelativePath = currentPath.resolve(file.getName());
+                ChunkedFile chunkedFile = new ChunkedFile(file);
+                chunkedFiles.add(chunkedFile);
+                list.add(fileRelativePath.toString());
+                list.add(String.valueOf(chunkedFile.length()));
+            }
+            String[] args = new String[list.size()];
+            list.toArray(args);
+            Command transf = new Command(KnownCommands.FileTransfer, args);
+            networkService.sendCommand(transf);
+            setBlockedState(true, "Sending files, waiting until receive completes...");
+            transferHelperService.queueReadyCallback(() -> {
+                Factory.getPipelineManager().setup(PipelineSetup.FILE.handlers);
+                for (ChunkedFile chunkedFile : chunkedFiles) {
+                    networkService.sendFile(chunkedFile);
+                }
+                Factory.getPipelineManager().setup(PipelineSetup.COMMAND.handlers);
+            });
+            transferHelperService.queueReadyCallback(() -> {
+                setBlockedState(false, "Sending complete.");
+                localStructureRequest();
+            });
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    @Override
+    public void updateViewLocal(String[] args) {
+        clearShownItems();
+        String path = args[0];
+        currentPath = Paths.get(path);
+        runLater(() -> pathLabel.setText("..root\\" + path));
+
+        if (!path.isEmpty()) {
+            addItem(backMark, -2);
+        }
+        for (int i = 1; i < args.length; i += 2) {
+            String name = args[i];
+            long length = Long.parseLong(args[i + 1]);
+            addItem(name, length);
+        }
+    }
+
+    @Override
+    public void setBlockedState(boolean blocked, String statusMessage) {
+        runLater(() -> {
+            controlPane.setDisable(blocked);
+            statusBar.setText(statusMessage);
+            loadingImage.setVisible(blocked);
+        });
+    }
+
+    private void clearShownItems() {
+        shownItems.clear();
+        currentPath = Paths.get("");
+        runLater(() -> listView.getItems().clear());
+    }
+
+    private void addItem(String item, long length) {
+        shownItems.put(item, length);
+        runLater(() -> listView.getItems().add(item));
+    }
+
+    private void runLater(Runnable function) {
+        Platform.runLater(function);
+    }
+
+    private void onMouseClicked(MouseEvent event) {
+        if (event.getButton() != MouseButton.PRIMARY) return;
+        hideContext();
+
+        Node intersectedNode = event.getPickResult().getIntersectedNode();
+        String clickedItemName = null;
+        if (intersectedNode instanceof ListCell) {
+            ListCell cell = (ListCell) intersectedNode;
+            clickedItemName = cell.getText();
+        } else if (intersectedNode instanceof Text) {
+            Text text = (Text) intersectedNode;
+            clickedItemName = text.getText();
+        }
+        if (clickedItemName != null && clickChecker.check(clickedItemName)) {
+            onItemDoubleClick(clickedItemName);
+        }
+    }
+
+    private void onItemDoubleClick(String itemName) {
+        if (!isDirectory(itemName)) {
+            System.out.println("This object is not a directory");
+            return;
+        }
+
+        Path resultPath = currentPath;
+        if (itemName.equals(backMark)) {
+            if (resultPath.getParent() == null) {
+                resultPath = Paths.get("");
+            } else {
+                resultPath = resultPath.getParent();
+            }
+        } else {
+            resultPath = resultPath.resolve(itemName);
+        }
+        Command structureRequest = new Command(KnownCommands.LocalStructureRequest, resultPath.toString());
+        Factory.getNetworkService().sendCommand(structureRequest);
+        System.out.println(resultPath);
+    }
+
+    private boolean isDirectory(String itemName) {
+        return shownItems.get(itemName) < 0;
+    }
+
+    @FXML
+    public void onContextMenu(ContextMenuEvent contextMenuEvent) {
+        hideContext();
+        ObservableList<String> selectedItems = listView.getSelectionModel().getSelectedItems();
+
+        MenuItem downloadSelected = new MenuItem("Download selected to...");
+        MenuItem deleteSelected = new MenuItem("Delete selected");
+        MenuItem createDir = new MenuItem("Create directory here");
+        MenuItem rename = new MenuItem("Rename");
+
+        downloadSelected.setOnAction(event -> onContextDownload(event, selectedItems));
+        deleteSelected.setOnAction(event -> onContextDelete(event, selectedItems));
+        createDir.setOnAction(this::onContextCreateDir);
+        rename.setOnAction(event -> onContextRename(event, selectedItems));
+
+        ContextMenu contextMenu = new ContextMenu(
+                downloadSelected,
+                deleteSelected,
+                createDir,
+                rename
+        );
+        contextMenu.setAutoHide(true);
+        contextMenu.show(listView, contextMenuEvent.getScreenX(), contextMenuEvent.getScreenY());
+        lastOpenedMenu = contextMenu;
+    }
+
+    private void onContextRename(ActionEvent actionEvent, ObservableList<String> selectedItems) {
+        if (selectedItems.size() != 1) {
+            System.err.println("wrong selection (must be 1 object)");
+            return;
+        }
+        String oldName = selectedItems.get(0);
+        TextInputDialog dialog = new TextInputDialog(oldName);
+        dialog.setTitle("Rename");
+        dialog.setHeaderText("Type new name...");
+        runLater(() -> {
+            dialog.showAndWait();
+            dialog.setResultConverter(param -> param.getButtonData().isDefaultButton() ? param.getText() : null);
+            if (dialog.getResult() != null) {
+                String oldPath = currentPath.resolve(oldName).toString();
+                String newPath = currentPath.resolve(dialog.getResult()).toString();
+                Command rename = new Command(KnownCommands.Move, oldPath, newPath);
+                Factory.getNetworkService().sendCommand(rename);
+                localStructureRequest();
+            }
+        });
+    }
+
+    private void onContextCreateDir(ActionEvent event) {
+        TextInputDialog dialog = new TextInputDialog();
+        dialog.setTitle("Directory creation");
+        dialog.setHeaderText("Type name of the directory...");
+        runLater(() -> {
+            dialog.showAndWait();
+            String dirName = currentPath.resolve(dialog.getResult()).toString();
+            Command createDir = new Command(KnownCommands.CreateDirectory, dirName);
+            Factory.getNetworkService().sendCommand(createDir);
+            localStructureRequest();
+        });
+    }
+
+    //TODO doesn't work for directories for now
+    private void onContextDownload(ActionEvent event, ObservableList<String> selectedItems) {
+        if (selectedItems.isEmpty()) {
+            System.err.println("Selection is empty");
+            return;
+        }
+        FileTransferHelperService helperService = Factory.getFileTransferService();
+        DirectoryChooser directoryChooser = new DirectoryChooser();
+        File file = directoryChooser.showDialog(App.getWindow());
+
+        List<String> filesToReceive = new ArrayList<>();
+        for (String selectedItem : selectedItems) {
+            if (isDirectory(selectedItem)) {
+                System.err.println("directories unsupported");
+                return;
+            }
+            Path fileResultPath = file.toPath().resolve(selectedItem);
+            long length = shownItems.get(selectedItem);
+            helperService.queueFileReceive(fileResultPath, length);
+            filesToReceive.add(currentPath.resolve(selectedItem).toString());
+        }
+        String[] args = new String[filesToReceive.size()];
+        filesToReceive.toArray(args);
+        Command fileRequest = new Command(KnownCommands.FileRequest, args);
+        Factory.getPipelineManager().setup(PipelineSetup.FILE.handlers);
+        Factory.getNetworkService().sendCommand(fileRequest);
+        setBlockedState(true, "Downloading...");
+        // File Inbound handler turns back to commands when finishes
+    }
+
+    private void onContextDelete(ActionEvent event, ObservableList<String> selectedItems) {
+        if (selectedItems.isEmpty()) {
+            System.err.println("Selection is empty");
+            return;
+        }
+        List<String> pathsToDelete = new ArrayList<>();
+        for (String selectedItem : selectedItems) {
+            Path path = currentPath.resolve(selectedItem);
+            pathsToDelete.add(path.toString());
+        }
+        String[] args = new String[pathsToDelete.size()];
+        pathsToDelete.toArray(args);
+        Command deleteCommand = new Command(KnownCommands.Delete, args);
+        Factory.getNetworkService().sendCommand(deleteCommand);
+        localStructureRequest();
+    }
+
+    private void localStructureRequest() {
+        Factory.getNetworkService().sendCommand(new Command(KnownCommands.LocalStructureRequest, currentPath.toString()));
+    }
+
+    private void hideContext() {
+        if (lastOpenedMenu != null) {
+            lastOpenedMenu.hide();
+        }
+    }
+
+    private static class DoubleClickChecker {
+        private long trackTime;
+        private boolean checkedOneTime;
+        private String lastClickedItem;
+        private final int delay;
+
+        public DoubleClickChecker(int delayMillis) {
+            this.delay = delayMillis;
+            lastClickedItem = "";
+        }
+
+        /**
+         * @return true if it was the second click on the same item
+         */
+        public boolean check(String item) {
+            boolean result = false;
+            if (!lastClickedItem.equals(item)) {
+                checkedOneTime = false;
+            }
+            if (!checkedOneTime) {
+                checkedOneTime = true;
+            } else if (System.currentTimeMillis() - trackTime < delay) {
+                checkedOneTime = false;
+                result = true;
+            }
+            trackTime = System.currentTimeMillis();
+            lastClickedItem = item;
+            return result;
+        }
     }
 }

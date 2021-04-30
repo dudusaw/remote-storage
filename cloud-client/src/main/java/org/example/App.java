@@ -5,7 +5,11 @@ import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.stage.Stage;
+import javafx.stage.Window;
+import org.example.domain.Command;
+import org.example.domain.KnownCommands;
 import org.example.factory.Factory;
+import org.example.service.NetworkService;
 
 import java.io.IOException;
 
@@ -18,13 +22,21 @@ public class App extends Application {
 
     @Override
     public void start(Stage stage) throws IOException {
+        NetworkService networkService = Factory.getNetworkService();
+        networkService.connect("localhost", 8189);
+
         scene = new Scene(loadFXML("primary"));
         stage.setTitle("Client");
         stage.setScene(scene);
+        stage.setResizable(false);
         stage.setOnCloseRequest(event -> {
             Factory.getNetworkService().closeConnectionIfExists();
         });
         stage.show();
+    }
+
+    static Window getWindow() {
+        return scene.getWindow();
     }
 
     static void setRoot(String fxml) throws IOException {

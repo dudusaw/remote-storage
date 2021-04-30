@@ -1,5 +1,6 @@
 package org.example.service;
 
+import io.netty.channel.ChannelHandler;
 import io.netty.channel.ChannelPipeline;
 
 /**
@@ -8,5 +9,5 @@ import io.netty.channel.ChannelPipeline;
 public interface PipelineManagerService {
 
     void setPipeline(ChannelPipeline pipeline);
-    void setup(PipelineSetup setup);
+    void setup(Class<? extends ChannelHandler>[] handlerClasses);
 }

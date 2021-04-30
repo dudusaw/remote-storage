@@ -1,4 +1,4 @@
-package org.example.domain.service.impl;
+package org.example.service.impl;
 
 import io.netty.handler.codec.serialization.ClassResolvers;
 import io.netty.handler.codec.serialization.ObjectDecoder;

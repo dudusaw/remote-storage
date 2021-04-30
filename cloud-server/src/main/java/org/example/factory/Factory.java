@@ -1,17 +1,16 @@
 package org.example.factory;
 
-import org.example.domain.service.FileStorageService;
-import org.example.domain.service.FileTransferHelperService;
+import org.example.service.FileStorageService;
+import org.example.service.FileTransferHelperService;
+import org.example.service.PipelineManagerService;
 import org.example.service.*;
 import org.example.service.impl.CommandProcessor;
-import org.example.domain.service.impl.FileTransferHelper;
+import org.example.service.impl.FileTransferHelper;
 import org.example.service.impl.NettyServerService;
 import org.example.service.impl.PipelineManager;
 import org.example.service.impl.ServerFileStorage;
-import org.reflections8.Reflections;
 
 import java.io.IOException;
-import java.lang.reflect.InvocationTargetException;
 import java.util.*;
 
 public class Factory {

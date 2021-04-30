@@ -5,7 +5,7 @@ import org.example.domain.Command;
 import org.example.domain.KnownCommands;
 import org.example.factory.Factory;
 import org.example.service.CommandService;
-import org.example.domain.service.FileTransferHelperService;
+import org.example.service.FileTransferHelperService;
 
 public class ReadyCommand implements CommandService {
     @Override

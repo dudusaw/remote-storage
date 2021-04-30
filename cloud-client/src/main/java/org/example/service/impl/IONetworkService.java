@@ -8,7 +8,13 @@ import io.netty.channel.EventLoopGroup;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioSocketChannel;
+import io.netty.handler.stream.ChunkedFile;
+import org.example.domain.Command;
+import org.example.factory.Factory;
 import org.example.service.NetworkService;
+import org.example.service.PipelineSetup;
+
+import java.util.concurrent.CountDownLatch;
 
 public class IONetworkService implements NetworkService {
 
@@ -19,13 +25,13 @@ public class IONetworkService implements NetworkService {
     private SocketChannel socketChannel;
 
     @Override
-    public void sendCommand(String command) {
-
+    public void sendFile(ChunkedFile file) {
+        socketChannel.writeAndFlush(file);
     }
 
     @Override
-    public int readCommandResult(byte[] buffer) {
-        return 0;
+    public void sendCommand(Command cmd) {
+        socketChannel.writeAndFlush(cmd);
     }
 
     @Override
@@ -39,10 +45,23 @@ public class IONetworkService implements NetworkService {
     public void connect(String host, int port) {
         assert socketChannel == null;
 
-        new Thread(() -> connectToServerAndWait(host, port)).start();
+        CountDownLatch latch = new CountDownLatch(1);
+
+        new Thread(() -> connectToServerAndWait(host, port, latch)).start();
+
+        try {
+            latch.await();
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
     }
 
-    private void connectToServerAndWait(String host, int port) {
+    @Override
+    public void setupPipeline(PipelineSetup setup) {
+        Factory.getPipelineManager().setup(setup.handlers);
+    }
+
+    private void connectToServerAndWait(String host, int port, CountDownLatch latch) {
         EventLoopGroup workerGroup = new NioEventLoopGroup(1);
 
         try {
@@ -54,12 +73,17 @@ public class IONetworkService implements NetworkService {
                 @Override
                 public void initChannel(SocketChannel ch) {
                     IONetworkService.this.socketChannel = ch;
-                    // pipeline
+                    Factory.getPipelineManager().setPipeline(ch.pipeline());
+                    Factory.getPipelineManager().setup(PipelineSetup.COMMAND.handlers);
                 }
             });
 
             // Start the client.
             ChannelFuture f = b.connect(host, port).sync(); // (5)
+
+            System.out.println("Client connected");
+
+            latch.countDown();
 
             // Wait until the connection is closed.
             f.channel().closeFuture().sync();

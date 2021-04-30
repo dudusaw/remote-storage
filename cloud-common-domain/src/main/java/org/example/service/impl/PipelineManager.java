@@ -2,10 +2,7 @@ package org.example.service.impl;
 
 import io.netty.channel.ChannelHandler;
 import io.netty.channel.ChannelPipeline;
-import io.netty.handler.codec.serialization.ClassResolvers;
-import io.netty.handler.codec.serialization.ObjectDecoder;
 import org.example.service.PipelineManagerService;
-import org.example.service.PipelineSetup;
 
 import java.lang.reflect.InvocationTargetException;
 
@@ -23,7 +20,7 @@ public class PipelineManager implements PipelineManagerService {
     }
 
     @Override
-    public void setup(PipelineSetup setup) {
+    public final void setup(Class<? extends ChannelHandler>[] handlerClasses) {
         if (pipeline == null) {
             throw new IllegalStateException("pipeline wasn't set");
         }
@@ -31,7 +28,7 @@ public class PipelineManager implements PipelineManagerService {
         // Add new handlers to the pipeline first, then remove old ones
         // That way it should work properly if we want to write through the pipeline immediately after setup
         int clearCount = getPipelineLength();
-        constructAndAddHandlers(setup);
+        constructAndAddHandlers(handlerClasses);
         clearPipeLast(clearCount);
     }
 
@@ -49,11 +46,11 @@ public class PipelineManager implements PipelineManagerService {
         return c;
     }
 
-    private void constructAndAddHandlers(PipelineSetup setup) {
-        ChannelHandler[] handlers = new ChannelHandler[setup.handlerClasses.length];
-        for (int i = 0; i < setup.handlerClasses.length; i++) {
+    private void constructAndAddHandlers(Class<? extends ChannelHandler>[] handlerClasses) {
+        ChannelHandler[] handlers = new ChannelHandler[handlerClasses.length];
+        for (int i = 0; i < handlers.length; i++) {
             try {
-                handlers[i] = setup.handlerClasses[i].getDeclaredConstructor().newInstance();
+                handlers[i] = handlerClasses[i].getDeclaredConstructor().newInstance();
             } catch (InstantiationException | IllegalAccessException | InvocationTargetException | NoSuchMethodException e) {
                 e.printStackTrace();
             }

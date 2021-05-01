@@ -25,10 +25,6 @@ public class FileTransfer implements CommandService {
         PipelineManagerService pipelineManager = Factory.getPipelineManager();
         pipelineManager.setup(PipelineSetup.FILE.handlers);
         ctx.writeAndFlush(new Command(KnownCommands.Ready));
-
-        helperService.queueReadyCallback(() -> {
-            Factory.getControllerService().setBlockedState(false, "Download complete");
-        });
     }
 
     @Override

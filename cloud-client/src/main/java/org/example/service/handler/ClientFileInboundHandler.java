@@ -3,6 +3,8 @@ package org.example.service.handler;
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
+import org.example.domain.Command;
+import org.example.domain.KnownCommands;
 import org.example.service.FileTransferHelperService;
 import org.example.factory.Factory;
 import org.example.service.PipelineSetup;
@@ -17,6 +19,7 @@ public class ClientFileInboundHandler extends ChannelInboundHandlerAdapter {
 
         if (finished) {
             Factory.getPipelineManager().setup(PipelineSetup.COMMAND.handlers);
+            ctx.writeAndFlush(new Command(KnownCommands.Ready));
             Factory.getFileTransferService().queueReadyCallback(() ->
                     Factory.getControllerService().setBlockedState(false, "Download complete."));
         }

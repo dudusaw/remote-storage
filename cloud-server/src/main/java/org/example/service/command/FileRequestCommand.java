@@ -54,7 +54,6 @@ public class FileRequestCommand implements CommandService {
              send ready Command
         */
         sendBy1Method(ctx, command);
-        //sendBy2Method(ctx, command);
     }
 
     private void sendBy1Method(ChannelHandlerContext ctx, Command command) {
@@ -67,24 +66,7 @@ public class FileRequestCommand implements CommandService {
             for (String arg : command.getArgs()) {
                 Path item = storageService.getStoragePath().resolve(arg);
                 if (Files.isDirectory(item)) {
-                    Files.walkFileTree(item, new SimpleFileVisitor<>() {
-                        @Override
-                        public FileVisitResult preVisitDirectory(Path dir, BasicFileAttributes attrs) throws IOException {
-                            if (!dir.equals(item) && CommonUtil.isDirectoryEmpty(dir)) {
-                                Path relativeDirPath = dir.subpath(storageService.getStoragePath().getNameCount(), dir.getNameCount());
-                                Command createDir = new Command(KnownCommands.CreateDirectory, relativeDirPath.toString());
-                                ctx.writeAndFlush(createDir);
-                            }
-                            return FileVisitResult.CONTINUE;
-                        }
-
-                        @Override
-                        public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException {
-                            Path relativeFilePath = file.subpath(storageService.getStoragePath().getNameCount(), file.getNameCount());
-                            addFileToLists(filesToSend, chunkedFiles, relativeFilePath, file);
-                            return FileVisitResult.CONTINUE;
-                        }
-                    });
+                    Files.walkFileTree(item, new PathSimpleFileVisitor(item, storageService, ctx, filesToSend, chunkedFiles));
                 } else {
                     addFileToLists(filesToSend, chunkedFiles, Paths.get(arg), item);
                 }
@@ -113,19 +95,9 @@ public class FileRequestCommand implements CommandService {
         chunkedFiles.add(chunkedFile);
     }
 
-    private void sendBy2Method(ChannelHandlerContext ctx, Command command) {
-        Factory.getPipelineManager().setup(PipelineSetup.FILE.handlers);
-        FileStorageService storageService = Factory.getStorageService();
-        Counter counter = new Counter(command.getArgs().length, () -> responseAfterAllWritingDone(ctx));
-        for (String arg : command.getArgs()) {
-            ChunkedFile file = storageService.readFile(Paths.get(arg));
-            ctx.writeAndFlush(file).addListener(future -> counter.count());
-        }
-    }
-
     private void responseAfterAllWritingDone(ChannelHandlerContext ctx) {
         Factory.getPipelineManager().setup(PipelineSetup.COMMAND.handlers);
-        ctx.writeAndFlush(new Command(KnownCommands.Ready));
+        Factory.getFileTransferService().queueReadyCallback(() -> ctx.writeAndFlush(new Command(KnownCommands.Ready)));
     }
 
 
@@ -139,5 +111,38 @@ public class FileRequestCommand implements CommandService {
     @Override
     public String getCommand() {
         return KnownCommands.FileRequest.name;
+    }
+
+    private class PathSimpleFileVisitor extends SimpleFileVisitor<Path> {
+        private final Path item;
+        private final FileStorageService storageService;
+        private final ChannelHandlerContext ctx;
+        private final List<String> filesToSend;
+        private final List<ChunkedFile> chunkedFiles;
+
+        public PathSimpleFileVisitor(Path item, FileStorageService storageService, ChannelHandlerContext ctx, List<String> filesToSend, List<ChunkedFile> chunkedFiles) {
+            this.item = item;
+            this.storageService = storageService;
+            this.ctx = ctx;
+            this.filesToSend = filesToSend;
+            this.chunkedFiles = chunkedFiles;
+        }
+
+        @Override
+        public FileVisitResult preVisitDirectory(Path dir, BasicFileAttributes attrs) throws IOException {
+            if (!dir.equals(item) && CommonUtil.isDirectoryEmpty(dir)) {
+                Path relativeDirPath = dir.subpath(storageService.getStoragePath().getNameCount(), dir.getNameCount());
+                Command createDir = new Command(KnownCommands.CreateDirectory, relativeDirPath.toString());
+                ctx.writeAndFlush(createDir);
+            }
+            return FileVisitResult.CONTINUE;
+        }
+
+        @Override
+        public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException {
+            Path relativeFilePath = file.subpath(storageService.getStoragePath().getNameCount(), file.getNameCount());
+            addFileToLists(filesToSend, chunkedFiles, relativeFilePath, file);
+            return FileVisitResult.CONTINUE;
+        }
     }
 }

@@ -1,4 +1,4 @@
-package org.example.service.impl;
+package org.example.client.service.impl;
 
 import io.netty.channel.ChannelHandlerContext;
 import org.example.domain.Command;
@@ -36,7 +36,7 @@ public class ClientCommandProcessor implements CommandProcessService {
     }
 
     private static List<CommandService> constructCommandServiceList() {
-        Reflections reflections = new Reflections("org.example.service.command");
+        Reflections reflections = new Reflections("org.example.client.service.command");
 
         var services = reflections.getSubTypesOf(CommandService.class);
         if (services.isEmpty()) {

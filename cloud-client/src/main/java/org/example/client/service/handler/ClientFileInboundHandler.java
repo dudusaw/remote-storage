@@ -1,4 +1,4 @@
-package org.example.service.handler;
+package org.example.client.service.handler;
 
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandlerContext;
@@ -6,8 +6,8 @@ import io.netty.channel.ChannelInboundHandlerAdapter;
 import org.example.domain.Command;
 import org.example.domain.KnownCommands;
 import org.example.service.FileTransferHelperService;
-import org.example.factory.Factory;
-import org.example.service.PipelineSetup;
+import org.example.client.factory.Factory;
+import org.example.client.service.PipelineSetup;
 
 public class ClientFileInboundHandler extends ChannelInboundHandlerAdapter {
     @Override

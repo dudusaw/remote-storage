@@ -1,4 +1,4 @@
-package org.example.service;
+package org.example.client.service;
 
 import io.netty.handler.stream.ChunkedFile;
 import org.example.domain.Command;

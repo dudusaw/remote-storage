@@ -1,11 +1,11 @@
-package org.example.service;
+package org.example.client.service;
 
 import io.netty.channel.ChannelHandler;
 import io.netty.handler.codec.serialization.ObjectEncoder;
 import io.netty.handler.stream.ChunkedWriteHandler;
 import org.example.service.impl.MyObjectDecoder;
-import org.example.service.handler.ClientCommandInboundHandler;
-import org.example.service.handler.ClientFileInboundHandler;
+import org.example.client.service.handler.ClientCommandInboundHandler;
+import org.example.client.service.handler.ClientFileInboundHandler;
 
 public enum PipelineSetup {
 

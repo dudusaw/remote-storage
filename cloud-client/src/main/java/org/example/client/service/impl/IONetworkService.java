@@ -1,4 +1,4 @@
-package org.example.service.impl;
+package org.example.client.service.impl;
 
 import io.netty.bootstrap.Bootstrap;
 import io.netty.channel.ChannelFuture;
@@ -10,9 +10,9 @@ import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioSocketChannel;
 import io.netty.handler.stream.ChunkedFile;
 import org.example.domain.Command;
-import org.example.factory.Factory;
-import org.example.service.NetworkService;
-import org.example.service.PipelineSetup;
+import org.example.client.factory.Factory;
+import org.example.client.service.NetworkService;
+import org.example.client.service.PipelineSetup;
 
 import java.util.concurrent.CountDownLatch;
 

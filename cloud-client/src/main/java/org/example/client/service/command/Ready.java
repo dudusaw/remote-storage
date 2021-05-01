@@ -1,9 +1,9 @@
-package org.example.service.command;
+package org.example.client.service.command;
 
 import io.netty.channel.ChannelHandlerContext;
 import org.example.domain.Command;
 import org.example.domain.KnownCommands;
-import org.example.factory.Factory;
+import org.example.client.factory.Factory;
 import org.example.service.CommandService;
 
 public class Ready implements CommandService {

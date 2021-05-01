@@ -1,10 +1,9 @@
-package org.example.service.handler;
+package org.example.client.service.handler;
 
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;
 import org.example.domain.Command;
-import org.example.domain.KnownCommands;
-import org.example.factory.Factory;
+import org.example.client.factory.Factory;
 
 public class ClientCommandInboundHandler extends SimpleChannelInboundHandler<Command> {
     @Override

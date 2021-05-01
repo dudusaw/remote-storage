@@ -1,4 +1,4 @@
-package org.example;
+package org.example.client;
 
 import javafx.application.Application;
 import javafx.fxml.FXMLLoader;
@@ -6,10 +6,8 @@ import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.stage.Stage;
 import javafx.stage.Window;
-import org.example.domain.Command;
-import org.example.domain.KnownCommands;
-import org.example.factory.Factory;
-import org.example.service.NetworkService;
+import org.example.client.factory.Factory;
+import org.example.client.service.NetworkService;
 
 import java.io.IOException;
 

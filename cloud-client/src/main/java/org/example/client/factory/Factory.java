@@ -1,7 +1,13 @@
-package org.example.factory;
+package org.example.client.factory;
 
-import org.example.service.*;
-import org.example.service.impl.*;
+import org.example.client.service.*;
+import org.example.client.service.impl.*;
+import org.example.service.CommandProcessService;
+import org.example.service.FileStorageService;
+import org.example.service.FileTransferHelperService;
+import org.example.service.PipelineManagerService;
+import org.example.service.impl.FileTransferHelper;
+import org.example.service.impl.PipelineManager;
 
 public class Factory {
 

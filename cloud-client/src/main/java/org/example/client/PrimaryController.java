@@ -1,4 +1,4 @@
-package org.example;
+package org.example.client;
 
 import io.netty.handler.stream.ChunkedFile;
 import javafx.application.Platform;
@@ -18,8 +18,9 @@ import javafx.stage.DirectoryChooser;
 import org.example.domain.Command;
 import org.example.domain.CommonUtil;
 import org.example.domain.KnownCommands;
-import org.example.factory.Factory;
-import org.example.service.*;
+import org.example.client.factory.Factory;
+import org.example.client.service.*;
+import org.example.service.FileTransferHelperService;
 
 import java.io.File;
 import java.io.IOException;

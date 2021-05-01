@@ -4,36 +4,7 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="4c9bc650-c0f5-4da4-92ea-75a60fb30c2c" name="Default Changelist" comment="client transfer/request files">
-      <change afterPath="$PROJECT_DIR$/asd/asd2/asd3/hil6u.txt" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/cloud-client/src/main/java/org/example/service/command/CreateDir.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/cloud-client/src/main/java/org/example/service/command/FileTransfer.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/cloud-client/src/main/java/org/example/service/command/LocalStructureRequest.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/cloud-client/src/main/java/org/example/service/command/Ready.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/cloud-client/src/main/java/org/example/service/impl/ClientCommandProcessor.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/cloud-common-domain/src/main/java/org/example/domain/CommonUtil.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/cloud-common-domain/src/main/java/org/example/domain/Counter.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/cloud-server/docker/docker-compose.yaml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/cloud-client/pom.xml" beforeDir="false" afterPath="$PROJECT_DIR$/cloud-client/pom.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/cloud-client/src/main/java/org/example/MainClient.java" beforeDir="false" afterPath="$PROJECT_DIR$/cloud-client/src/main/java/org/example/MainClient.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/cloud-client/src/main/java/org/example/PrimaryController.java" beforeDir="false" afterPath="$PROJECT_DIR$/cloud-client/src/main/java/org/example/PrimaryController.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/cloud-client/src/main/java/org/example/factory/Factory.java" beforeDir="false" afterPath="$PROJECT_DIR$/cloud-client/src/main/java/org/example/factory/Factory.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/cloud-client/src/main/java/org/example/service/ControllerService.java" beforeDir="false" afterPath="$PROJECT_DIR$/cloud-client/src/main/java/org/example/service/ControllerService.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/cloud-client/src/main/java/org/example/service/handler/ClientCommandInboundHandler.java" beforeDir="false" afterPath="$PROJECT_DIR$/cloud-client/src/main/java/org/example/service/handler/ClientCommandInboundHandler.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/cloud-client/src/main/java/org/example/service/handler/ClientFileInboundHandler.java" beforeDir="false" afterPath="$PROJECT_DIR$/cloud-client/src/main/java/org/example/service/handler/ClientFileInboundHandler.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/cloud-client/src/main/resources/org/example/primary.fxml" beforeDir="false" afterPath="$PROJECT_DIR$/cloud-client/src/main/resources/org/example/primary.fxml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/cloud-common-domain/src/main/java/org/example/domain/Command.java" beforeDir="false" afterPath="$PROJECT_DIR$/cloud-common-domain/src/main/java/org/example/domain/Command.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/cloud-common-domain/src/main/java/org/example/service/FileTransferHelperService.java" beforeDir="false" afterPath="$PROJECT_DIR$/cloud-common-domain/src/main/java/org/example/service/FileTransferHelperService.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/cloud-common-domain/src/main/java/org/example/service/VoidFunction.java" beforeDir="false" afterPath="$PROJECT_DIR$/cloud-common-domain/src/main/java/org/example/domain/VoidFunction.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/cloud-common-domain/src/main/java/org/example/service/impl/FileTransferHelper.java" beforeDir="false" afterPath="$PROJECT_DIR$/cloud-common-domain/src/main/java/org/example/service/impl/FileTransferHelper.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/cloud-server/src/main/java/org/example/service/CommandProcessService.java" beforeDir="false" afterPath="$PROJECT_DIR$/cloud-common-domain/src/main/java/org/example/service/CommandProcessService.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/cloud-server/src/main/java/org/example/service/CommandService.java" beforeDir="false" afterPath="$PROJECT_DIR$/cloud-common-domain/src/main/java/org/example/service/CommandService.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/cloud-server/src/main/java/org/example/service/command/CreateDirCommand.java" beforeDir="false" afterPath="$PROJECT_DIR$/cloud-server/src/main/java/org/example/service/command/CreateDirCommand.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/cloud-server/src/main/java/org/example/service/command/FileRequestCommand.java" beforeDir="false" afterPath="$PROJECT_DIR$/cloud-server/src/main/java/org/example/service/command/FileRequestCommand.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/cloud-server/src/main/java/org/example/service/command/FileStructureRequestCommand.java" beforeDir="false" afterPath="$PROJECT_DIR$/cloud-server/src/main/java/org/example/service/command/FileStructureRequestCommand.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/cloud-server/src/main/java/org/example/service/command/LocalStructureRequestCommand.java" beforeDir="false" afterPath="$PROJECT_DIR$/cloud-server/src/main/java/org/example/service/command/LocalStructureRequestCommand.java" afterDir="false" />
-    </list>
+    <list default="true" id="4c9bc650-c0f5-4da4-92ea-75a60fb30c2c" name="Default Changelist" comment="directories transfer fix" />
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -227,7 +198,14 @@
       <option name="project" value="LOCAL" />
       <updated>1619793311288</updated>
     </task>
-    <option name="localTasksCounter" value="7" />
+    <task id="LOCAL-00007" summary="directories transfer fix">
+      <created>1619867245735</created>
+      <option name="number" value="00007" />
+      <option name="presentableId" value="LOCAL-00007" />
+      <option name="project" value="LOCAL" />
+      <updated>1619867245735</updated>
+    </task>
+    <option name="localTasksCounter" value="8" />
     <servers />
   </component>
   <component name="UnknownFeatures">
@@ -305,18 +283,8 @@
     <MESSAGE value="Revert &quot;Initial commit&quot;&#10;&#10;This reverts commit a74144e1" />
     <MESSAGE value="fix" />
     <MESSAGE value="client transfer/request files" />
-    <option name="LAST_COMMIT_MESSAGE" value="client transfer/request files" />
-  </component>
-  <component name="XDebuggerManager">
-    <breakpoint-manager>
-      <breakpoints>
-        <line-breakpoint enabled="true" type="java-line">
-          <url>file://$PROJECT_DIR$/cloud-client/src/main/java/org/example/service/command/CreateDir.java</url>
-          <line>15</line>
-          <option name="timeStamp" value="22" />
-        </line-breakpoint>
-      </breakpoints>
-    </breakpoint-manager>
+    <MESSAGE value="directories transfer fix" />
+    <option name="LAST_COMMIT_MESSAGE" value="directories transfer fix" />
   </component>
   <component name="XSLT-Support.FileAssociations.UIState">
     <expand />

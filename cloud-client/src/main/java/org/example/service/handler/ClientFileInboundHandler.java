@@ -17,7 +17,8 @@ public class ClientFileInboundHandler extends ChannelInboundHandlerAdapter {
 
         if (finished) {
             Factory.getPipelineManager().setup(PipelineSetup.COMMAND.handlers);
-            Factory.getControllerService().setBlockedState(false, "File transfer complete.");
+            Factory.getFileTransferService().queueReadyCallback(() ->
+                    Factory.getControllerService().setBlockedState(false, "Download complete."));
         }
     }
 }

@@ -1,6 +1,7 @@
 package org.example.service;
 
 import io.netty.buffer.ByteBuf;
+import org.example.domain.VoidFunction;
 
 import java.nio.file.Path;
 

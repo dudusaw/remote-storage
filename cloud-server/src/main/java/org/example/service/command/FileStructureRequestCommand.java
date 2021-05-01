@@ -26,28 +26,7 @@ public class FileStructureRequestCommand implements CommandService {
             List<String> walkedFiles = new ArrayList<>();
             FileStorageService storageService = Factory.getStorageService();
             Path root = storageService.getStoragePath();
-            Files.walkFileTree(root, new SimpleFileVisitor<>() {
-                @Override
-                public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException {
-                    Path resultPath = file.subpath(root.getNameCount(), file.getNameCount());
-                    walkedFiles.add(resultPath.toString());
-                    walkedFiles.add(String.valueOf(attrs.size()));
-                    return FileVisitResult.CONTINUE;
-                }
-
-                @Override
-                public FileVisitResult postVisitDirectory(Path dir, IOException exc) throws IOException {
-                    if (!dir.equals(root)) {
-                        if (exc != null) {
-                            throw exc;
-                        }
-                        Path resultPath = dir.subpath(root.getNameCount(), dir.getNameCount());
-                        walkedFiles.add(resultPath.toString());
-                        walkedFiles.add(String.valueOf(-1));
-                    }
-                    return FileVisitResult.CONTINUE;
-                }
-            });
+            Files.walkFileTree(root, new PathSimpleFileVisitor(root, walkedFiles));
             String[] args = new String[walkedFiles.size()];
             walkedFiles.toArray(args);
             Command response = new Command(KnownCommands.FileStructureRequest, args);
@@ -60,5 +39,36 @@ public class FileStructureRequestCommand implements CommandService {
     @Override
     public String getCommand() {
         return KnownCommands.FileStructureRequest.name;
+    }
+
+    private static class PathSimpleFileVisitor extends SimpleFileVisitor<Path> {
+        private final Path root;
+        private final List<String> walkedFiles;
+
+        public PathSimpleFileVisitor(Path root, List<String> walkedFiles) {
+            this.root = root;
+            this.walkedFiles = walkedFiles;
+        }
+
+        @Override
+        public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException {
+            Path resultPath = file.subpath(root.getNameCount(), file.getNameCount());
+            walkedFiles.add(resultPath.toString());
+            walkedFiles.add(String.valueOf(attrs.size()));
+            return FileVisitResult.CONTINUE;
+        }
+
+        @Override
+        public FileVisitResult postVisitDirectory(Path dir, IOException exc) throws IOException {
+            if (!dir.equals(root)) {
+                if (exc != null) {
+                    throw exc;
+                }
+                Path resultPath = dir.subpath(root.getNameCount(), dir.getNameCount());
+                walkedFiles.add(resultPath.toString());
+                walkedFiles.add(String.valueOf(-1));
+            }
+            return FileVisitResult.CONTINUE;
+        }
     }
 }

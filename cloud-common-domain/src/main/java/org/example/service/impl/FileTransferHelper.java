@@ -3,7 +3,7 @@ package org.example.service.impl;
 import io.netty.buffer.ByteBuf;
 import org.example.service.FileStorageService;
 import org.example.service.FileTransferHelperService;
-import org.example.service.VoidFunction;
+import org.example.domain.VoidFunction;
 
 import java.nio.file.Path;
 import java.util.ArrayDeque;

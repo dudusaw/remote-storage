@@ -16,6 +16,7 @@ import javafx.scene.layout.AnchorPane;
 import javafx.scene.text.Text;
 import javafx.stage.DirectoryChooser;
 import org.example.domain.Command;
+import org.example.domain.CommonUtil;
 import org.example.domain.KnownCommands;
 import org.example.factory.Factory;
 import org.example.service.*;
@@ -23,8 +24,8 @@ import org.example.service.*;
 import java.io.File;
 import java.io.IOException;
 import java.net.URL;
-import java.nio.file.Path;
-import java.nio.file.Paths;
+import java.nio.file.*;
+import java.nio.file.attribute.BasicFileAttributes;
 import java.util.*;
 
 public class PrimaryController implements Initializable, ControllerService {
@@ -46,6 +47,7 @@ public class PrimaryController implements Initializable, ControllerService {
     private DoubleClickChecker clickChecker;
     private Path currentPath;
     private ContextMenu lastOpenedMenu;
+    private Path lastSelectedDir = Path.of("");
 
     private final static String backMark = "..";
 
@@ -84,7 +86,6 @@ public class PrimaryController implements Initializable, ControllerService {
                 Dragboard db = event.getDragboard();
                 boolean success = false;
                 if (db.hasFiles()) {
-                    System.out.println(db.getFiles());
                     sendFilesToActivePath(db.getFiles());
                     success = true;
                 }
@@ -98,20 +99,40 @@ public class PrimaryController implements Initializable, ControllerService {
         try {
             FileTransferHelperService transferHelperService = Factory.getFileTransferService();
             NetworkService networkService = Factory.getNetworkService();
-            List<String> list = new ArrayList<>();
+            List<String> argsList = new ArrayList<>();
             List<ChunkedFile> chunkedFiles = new ArrayList<>();
             for (File file : files) {
-                Path fileRelativePath = currentPath.resolve(file.getName());
-                ChunkedFile chunkedFile = new ChunkedFile(file);
-                chunkedFiles.add(chunkedFile);
-                list.add(fileRelativePath.toString());
-                list.add(String.valueOf(chunkedFile.length()));
+                if (file.isDirectory()) {
+                    Files.walkFileTree(file.toPath(), new SimpleFileVisitor<>() {
+                        @Override
+                        public FileVisitResult preVisitDirectory(Path dir, BasicFileAttributes attrs) throws IOException {
+                            // Create empty directories first, non empty ones will be created with the actual files
+                            Path fileRelativePath = currentPath.resolve(file.toPath().getParent().relativize(dir).normalize());
+                            if (CommonUtil.isDirectoryEmpty(dir)) {
+                                Command createDir = new Command(KnownCommands.CreateDirectory, fileRelativePath.toString());
+                                networkService.sendCommand(createDir);
+                            }
+                            return FileVisitResult.CONTINUE;
+                        }
+
+                        @Override
+                        public FileVisitResult visitFile(Path visitedFile, BasicFileAttributes attrs) throws IOException {
+                            Path fileRelativePath = currentPath.resolve(file.toPath().getParent().relativize(visitedFile).normalize());
+                            addPathToLists(argsList, chunkedFiles, fileRelativePath, new File(visitedFile.toString()));
+                            return FileVisitResult.CONTINUE;
+                        }
+                    });
+                } else {
+                    addPathToLists(argsList, chunkedFiles, currentPath.resolve(file.getName()), file);
+                }
             }
-            String[] args = new String[list.size()];
-            list.toArray(args);
-            Command transf = new Command(KnownCommands.FileTransfer, args);
+            if (argsList.isEmpty()) {
+                setBlockedState(false, "Nothing to send.");
+                return;
+            }
+            Command transf = new Command(KnownCommands.FileTransfer, argsList);
             networkService.sendCommand(transf);
-            setBlockedState(true, "Sending files, waiting until receive completes...");
+            setBlockedState(true, "Sending files...");
             transferHelperService.queueReadyCallback(() -> {
                 Factory.getPipelineManager().setup(PipelineSetup.FILE.handlers);
                 for (ChunkedFile chunkedFile : chunkedFiles) {
@@ -126,6 +147,13 @@ public class PrimaryController implements Initializable, ControllerService {
         } catch (IOException e) {
             e.printStackTrace();
         }
+    }
+
+    private void addPathToLists(List<String> argsList, List<ChunkedFile> chunkedFiles, Path relativePath, File file) throws IOException {
+        ChunkedFile chunkedFile = new ChunkedFile(file);
+        chunkedFiles.add(chunkedFile);
+        argsList.add(relativePath.toString());
+        argsList.add(String.valueOf(chunkedFile.length()));
     }
 
     @Override
@@ -154,6 +182,11 @@ public class PrimaryController implements Initializable, ControllerService {
         });
     }
 
+    @Override
+    public Path lastSelectedDir() {
+        return lastSelectedDir;
+    }
+
     private void clearShownItems() {
         shownItems.clear();
         currentPath = Paths.get("");
@@ -171,7 +204,7 @@ public class PrimaryController implements Initializable, ControllerService {
 
     private void onMouseClicked(MouseEvent event) {
         if (event.getButton() != MouseButton.PRIMARY) return;
-        hideContext();
+        hideContextMenu();
 
         Node intersectedNode = event.getPickResult().getIntersectedNode();
         String clickedItemName = null;
@@ -214,7 +247,7 @@ public class PrimaryController implements Initializable, ControllerService {
 
     @FXML
     public void onContextMenu(ContextMenuEvent contextMenuEvent) {
-        hideContext();
+        hideContextMenu();
         ObservableList<String> selectedItems = listView.getSelectionModel().getSelectedItems();
 
         MenuItem downloadSelected = new MenuItem("Download selected to...");
@@ -250,7 +283,7 @@ public class PrimaryController implements Initializable, ControllerService {
         runLater(() -> {
             dialog.showAndWait();
             dialog.setResultConverter(param -> param.getButtonData().isDefaultButton() ? param.getText() : null);
-            if (dialog.getResult() != null) {
+            if (dialog.getResult() != null && !dialog.getResult().isEmpty()) {
                 String oldPath = currentPath.resolve(oldName).toString();
                 String newPath = currentPath.resolve(dialog.getResult()).toString();
                 Command rename = new Command(KnownCommands.Move, oldPath, newPath);
@@ -266,15 +299,37 @@ public class PrimaryController implements Initializable, ControllerService {
         dialog.setHeaderText("Type name of the directory...");
         runLater(() -> {
             dialog.showAndWait();
-            String dirName = currentPath.resolve(dialog.getResult()).toString();
-            Command createDir = new Command(KnownCommands.CreateDirectory, dirName);
-            Factory.getNetworkService().sendCommand(createDir);
-            localStructureRequest();
+            dialog.setResultConverter(param -> param.getButtonData().isDefaultButton() ? param.getText() : null);
+            if (dialog.getResult() != null && !dialog.getResult().isEmpty()) {
+                String dirName = currentPath.resolve(dialog.getResult()).toString();
+                Command createDir = new Command(KnownCommands.CreateDirectory, dirName);
+                Factory.getNetworkService().sendCommand(createDir);
+                localStructureRequest();
+            }
         });
     }
 
-    //TODO doesn't work for directories for now
     private void onContextDownload(ActionEvent event, ObservableList<String> selectedItems) {
+        NetworkService networkService = Factory.getNetworkService();
+        List<String> requestedFiles = new ArrayList<>();
+
+        DirectoryChooser directoryChooser = new DirectoryChooser();
+        File file = directoryChooser.showDialog(App.getWindow());
+
+        lastSelectedDir = file.toPath();
+
+        for (String selectedItem : selectedItems) {
+            Path relative = currentPath.resolve(selectedItem);
+            requestedFiles.add(relative.toString());
+        }
+
+        setBlockedState(true, "Downloading...");
+        Command req = new Command(KnownCommands.FileRequest, requestedFiles);
+        networkService.sendCommand(req);
+    }
+
+    //TODO doesn't work for directories for now
+    private void onContextDownloadOld(ActionEvent event, ObservableList<String> selectedItems) {
         if (selectedItems.isEmpty()) {
             System.err.println("Selection is empty");
             return;
@@ -294,9 +349,7 @@ public class PrimaryController implements Initializable, ControllerService {
             helperService.queueFileReceive(fileResultPath, length);
             filesToReceive.add(currentPath.resolve(selectedItem).toString());
         }
-        String[] args = new String[filesToReceive.size()];
-        filesToReceive.toArray(args);
-        Command fileRequest = new Command(KnownCommands.FileRequest, args);
+        Command fileRequest = new Command(KnownCommands.FileRequest, filesToReceive);
         Factory.getPipelineManager().setup(PipelineSetup.FILE.handlers);
         Factory.getNetworkService().sendCommand(fileRequest);
         setBlockedState(true, "Downloading...");
@@ -313,9 +366,7 @@ public class PrimaryController implements Initializable, ControllerService {
             Path path = currentPath.resolve(selectedItem);
             pathsToDelete.add(path.toString());
         }
-        String[] args = new String[pathsToDelete.size()];
-        pathsToDelete.toArray(args);
-        Command deleteCommand = new Command(KnownCommands.Delete, args);
+        Command deleteCommand = new Command(KnownCommands.Delete, pathsToDelete);
         Factory.getNetworkService().sendCommand(deleteCommand);
         localStructureRequest();
     }
@@ -324,10 +375,15 @@ public class PrimaryController implements Initializable, ControllerService {
         Factory.getNetworkService().sendCommand(new Command(KnownCommands.LocalStructureRequest, currentPath.toString()));
     }
 
-    private void hideContext() {
+    private void hideContextMenu() {
         if (lastOpenedMenu != null) {
             lastOpenedMenu.hide();
         }
+    }
+
+    @FXML
+    public void onRefreshButton(ActionEvent actionEvent) {
+        localStructureRequest();
     }
 
     private static class DoubleClickChecker {

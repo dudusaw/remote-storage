@@ -3,14 +3,21 @@ package org.example.service.command;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.stream.ChunkedFile;
 import org.example.domain.Command;
+import org.example.domain.CommonUtil;
+import org.example.domain.Counter;
 import org.example.domain.KnownCommands;
 import org.example.factory.Factory;
 import org.example.service.CommandService;
 import org.example.service.FileStorageService;
+import org.example.service.FileTransferHelperService;
 import org.example.service.PipelineSetup;
-import org.example.service.VoidFunction;
 
-import java.nio.file.Paths;
+import java.io.File;
+import java.io.IOException;
+import java.nio.file.*;
+import java.nio.file.attribute.BasicFileAttributes;
+import java.util.ArrayList;
+import java.util.List;
 
 public class FileRequestCommand implements CommandService {
     @Override
@@ -46,6 +53,67 @@ public class FileRequestCommand implements CommandService {
              turn into Command mode
              send ready Command
         */
+        sendBy1Method(ctx, command);
+        //sendBy2Method(ctx, command);
+    }
+
+    private void sendBy1Method(ChannelHandlerContext ctx, Command command) {
+        try {
+            List<String> filesToSend = new ArrayList<>();
+            List<ChunkedFile> chunkedFiles = new ArrayList<>();
+            FileStorageService storageService = Factory.getStorageService();
+            FileTransferHelperService transferHelperService = Factory.getFileTransferService();
+
+            for (String arg : command.getArgs()) {
+                Path item = storageService.getStoragePath().resolve(arg);
+                if (Files.isDirectory(item)) {
+                    Files.walkFileTree(item, new SimpleFileVisitor<>() {
+                        @Override
+                        public FileVisitResult preVisitDirectory(Path dir, BasicFileAttributes attrs) throws IOException {
+                            if (!dir.equals(item) && CommonUtil.isDirectoryEmpty(dir)) {
+                                Path relativeDirPath = dir.subpath(storageService.getStoragePath().getNameCount(), dir.getNameCount());
+                                Command createDir = new Command(KnownCommands.CreateDirectory, relativeDirPath.toString());
+                                ctx.writeAndFlush(createDir);
+                            }
+                            return FileVisitResult.CONTINUE;
+                        }
+
+                        @Override
+                        public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException {
+                            Path relativeFilePath = file.subpath(storageService.getStoragePath().getNameCount(), file.getNameCount());
+                            addFileToLists(filesToSend, chunkedFiles, relativeFilePath, file);
+                            return FileVisitResult.CONTINUE;
+                        }
+                    });
+                } else {
+                    addFileToLists(filesToSend, chunkedFiles, Paths.get(arg), item);
+                }
+            }
+            Command transf = new Command(KnownCommands.FileTransfer, filesToSend);
+            ctx.writeAndFlush(transf);
+
+            transferHelperService.queueReadyCallback(() -> {
+                Counter counter = new Counter(chunkedFiles.size(), () -> responseAfterAllWritingDone(ctx));
+                Factory.getPipelineManager().setup(PipelineSetup.FILE.handlers);
+                for (ChunkedFile chunkedFile : chunkedFiles) {
+                    ctx.writeAndFlush(chunkedFile).addListener(future -> counter.count());
+                }
+            });
+
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    private void addFileToLists(List<String> filesToSend, List<ChunkedFile> chunkedFiles, Path relativePath, Path absolutePath) throws IOException {
+        ChunkedFile chunkedFile = new ChunkedFile(new File(absolutePath.toString()));
+        long length = chunkedFile.length();
+        filesToSend.add(relativePath.toString());
+        filesToSend.add(String.valueOf(length));
+        chunkedFiles.add(chunkedFile);
+    }
+
+    private void sendBy2Method(ChannelHandlerContext ctx, Command command) {
         Factory.getPipelineManager().setup(PipelineSetup.FILE.handlers);
         FileStorageService storageService = Factory.getStorageService();
         Counter counter = new Counter(command.getArgs().length, () -> responseAfterAllWritingDone(ctx));
@@ -57,36 +125,9 @@ public class FileRequestCommand implements CommandService {
 
     private void responseAfterAllWritingDone(ChannelHandlerContext ctx) {
         Factory.getPipelineManager().setup(PipelineSetup.COMMAND.handlers);
-        //Command readyResponse = new Command(KnownCommands.Ready);
-        //ctx.writeAndFlush(readyResponse);
+        ctx.writeAndFlush(new Command(KnownCommands.Ready));
     }
 
-
-    /**
-     * 'Action' event executes when count() called 'amount' times
-     */
-    private static class Counter {
-        private int amount;
-        private final VoidFunction action;
-
-        public Counter(int amount, VoidFunction action) {
-            assert amount > 0;
-            assert action != null;
-
-            this.amount = amount;
-            this.action = action;
-        }
-
-        public void count() {
-            if (amount <= 0) {
-                throw new IllegalStateException("count exceeded amount");
-            }
-            amount--;
-            if (amount == 0) {
-                action.act();
-            }
-        }
-    }
 
     private void verifyArgs(Command command) {
         String[] args = command.getArgs();

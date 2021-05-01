@@ -10,15 +10,13 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 
-/**
- * Creates a directory with a specified path
- */
-public class CreateDirCommand implements CommandService {
+public class CreateDir implements CommandService {
     @Override
     public void processCommand(ChannelHandlerContext ctx, Command command) {
-        Path root = Factory.getStorageService().getStoragePath().resolve(command.getArgs()[0]);
         try {
-            Files.createDirectories(root);
+            Path dir = Path.of(command.getArgs()[0]);
+            Path lastSelected = Factory.getControllerService().lastSelectedDir();
+            Files.createDirectories(lastSelected.resolve(dir));
         } catch (IOException e) {
             e.printStackTrace();
         }

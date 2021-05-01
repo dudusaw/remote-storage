@@ -39,6 +39,7 @@
                   <Font name="Segoe UI Bold" size="14.0" />
                </font>
             </Label>
+            <Button fx:id="refreshButton" layoutX="20.0" layoutY="137.0" mnemonicParsing="false" onAction="#onRefreshButton" text="Refresh" />
          </children>
       </AnchorPane>
       <ImageView fx:id="loadingImage" fitHeight="60.0" fitWidth="60.0" layoutX="235.0" pickOnBounds="true" preserveRatio="true" AnchorPane.leftAnchor="225.0" AnchorPane.topAnchor="110.0" />

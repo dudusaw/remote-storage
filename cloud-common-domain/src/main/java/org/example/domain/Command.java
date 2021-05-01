@@ -1,6 +1,7 @@
 package org.example.domain;
 
 import java.io.Serializable;
+import java.util.List;
 
 public class Command implements Serializable {
 
@@ -10,6 +11,13 @@ public class Command implements Serializable {
     public Command(KnownCommands name, String... args) {
         this.commandName = name.name;
         this.args = args;
+    }
+
+    public Command(KnownCommands name, List<String> args) {
+        this.commandName = name.name;
+        String[] a = new String[args.size()];
+        args.toArray(a);
+        this.args = a;
     }
 
     public String getCommandName() {

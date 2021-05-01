@@ -26,6 +26,11 @@
             <artifactId>javafx-fxml</artifactId>
             <version>11.0.2</version>
         </dependency>
+        <dependency>
+            <groupId>net.oneandone.reflections8</groupId>
+            <artifactId>reflections8</artifactId>
+            <version>0.11.5</version>
+        </dependency>
     </dependencies>
     <build>
         <plugins>

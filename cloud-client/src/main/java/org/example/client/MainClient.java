@@ -4,6 +4,6 @@ package org.example.client;
 public class MainClient {
 
     public static void main(String[] args) {
-        App.main(args);
+        App.mainLaunch(args);
     }
 }

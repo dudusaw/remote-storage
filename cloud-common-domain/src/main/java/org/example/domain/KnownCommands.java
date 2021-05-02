@@ -9,6 +9,8 @@ public enum KnownCommands {
     Delete("/delete"),
     FileStructureRequest("/reqfs"),
     LocalStructureRequest("/reqlocal"),
+    RegisterRequest("/reg"),
+    LoginRequest("/lg"),
     Move("/mv");
 
     public final String name;

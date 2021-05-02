@@ -23,7 +23,7 @@ public class CreateDir implements CommandService {
     }
 
     @Override
-    public String getCommand() {
-        return KnownCommands.CreateDirectory.name;
+    public KnownCommands getCommand() {
+        return KnownCommands.CreateDirectory;
     }
 }

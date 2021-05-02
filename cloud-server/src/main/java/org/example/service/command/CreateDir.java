@@ -13,7 +13,7 @@ import java.nio.file.Path;
 /**
  * Creates a directory with a specified path
  */
-public class CreateDirCommand implements CommandService {
+public class CreateDir implements CommandService {
     @Override
     public void processCommand(ChannelHandlerContext ctx, Command command) {
         Path root = Factory.getStorageService().getStoragePath().resolve(command.getArgs()[0]);
@@ -25,7 +25,7 @@ public class CreateDirCommand implements CommandService {
     }
 
     @Override
-    public String getCommand() {
-        return KnownCommands.CreateDirectory.name;
+    public KnownCommands getCommand() {
+        return KnownCommands.CreateDirectory;
     }
 }

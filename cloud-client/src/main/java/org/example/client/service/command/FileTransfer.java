@@ -28,7 +28,7 @@ public class FileTransfer implements CommandService {
     }
 
     @Override
-    public String getCommand() {
-        return KnownCommands.FileTransfer.name;
+    public KnownCommands getCommand() {
+        return KnownCommands.FileTransfer;
     }
 }

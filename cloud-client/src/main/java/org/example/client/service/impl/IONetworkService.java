@@ -15,6 +15,7 @@ import org.example.client.service.NetworkService;
 import org.example.client.service.PipelineSetup;
 
 import java.util.concurrent.CountDownLatch;
+import java.util.function.Consumer;
 
 public class IONetworkService implements NetworkService {
 
@@ -42,18 +43,10 @@ public class IONetworkService implements NetworkService {
     }
 
     @Override
-    public void connect(String host, int port) {
+    public void connectWithCallback(String host, int port, Consumer<Boolean> onResult) {
         assert socketChannel == null;
 
-        CountDownLatch latch = new CountDownLatch(1);
-
-        new Thread(() -> connectToServerAndWait(host, port, latch)).start();
-
-        try {
-            latch.await();
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
+        new Thread(() -> connectToServerAndWait(host, port, onResult)).start();
     }
 
     @Override
@@ -61,7 +54,7 @@ public class IONetworkService implements NetworkService {
         Factory.getPipelineManager().setup(setup.handlers);
     }
 
-    private void connectToServerAndWait(String host, int port, CountDownLatch latch) {
+    private void connectToServerAndWait(String host, int port, Consumer<Boolean> onResult) {
         EventLoopGroup workerGroup = new NioEventLoopGroup(1);
 
         try {
@@ -79,11 +72,11 @@ public class IONetworkService implements NetworkService {
             });
 
             // Start the client.
-            ChannelFuture f = b.connect(host, port).sync(); // (5)
+            ChannelFuture f = b.connect(host, port).addListener(future -> {
+                onResult.accept(future.isSuccess());
+            }).sync();
 
             System.out.println("Client connected");
-
-            latch.countDown();
 
             // Wait until the connection is closed.
             f.channel().closeFuture().sync();

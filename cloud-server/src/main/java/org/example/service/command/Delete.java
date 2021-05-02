@@ -10,7 +10,7 @@ import org.example.service.FileStorageService;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
-public class DeleteCommand implements CommandService {
+public class Delete implements CommandService {
     @Override
     public void processCommand(ChannelHandlerContext ctx, Command command) {
         String[] args = command.getArgs();
@@ -22,7 +22,7 @@ public class DeleteCommand implements CommandService {
     }
 
     @Override
-    public String getCommand() {
-        return KnownCommands.Delete.name;
+    public KnownCommands getCommand() {
+        return KnownCommands.Delete;
     }
 }

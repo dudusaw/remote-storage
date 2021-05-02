@@ -23,7 +23,7 @@ public class CommandProcessor implements CommandProcessService {
 
         Map<String, CommandService> commandDictionary = new HashMap<>();
         for (CommandService commandService : commandServiceList) {
-            commandDictionary.put(commandService.getCommand(), commandService);
+            commandDictionary.put(commandService.getCommand().name, commandService);
         }
 
         return commandDictionary;

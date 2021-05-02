@@ -13,7 +13,7 @@ public class LocalStructureRequest implements CommandService {
     }
 
     @Override
-    public String getCommand() {
-        return KnownCommands.LocalStructureRequest.name;
+    public KnownCommands getCommand() {
+        return KnownCommands.LocalStructureRequest;
     }
 }

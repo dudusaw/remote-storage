@@ -23,7 +23,7 @@ import java.nio.file.Paths;
  * Then the result command: '/transf \some_package\abc1\my_file.txt 2147483648'.
  * Server should put it in 'A:\storage\some_package\abc1\my_file.txt'.
  */
-public class FileTransferCommand implements CommandService {
+public class FileTransfer implements CommandService {
     @Override
     public void processCommand(ChannelHandlerContext ctx, Command command) {
         verifyArgs(ctx, command);
@@ -54,7 +54,7 @@ public class FileTransferCommand implements CommandService {
     }
 
     @Override
-    public String getCommand() {
-        return KnownCommands.FileTransfer.name;
+    public KnownCommands getCommand() {
+        return KnownCommands.FileTransfer;
     }
 }

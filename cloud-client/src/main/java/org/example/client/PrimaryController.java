@@ -134,14 +134,14 @@ public class PrimaryController implements Initializable, ControllerService {
             Command transf = new Command(KnownCommands.FileTransfer, argsList);
             networkService.sendCommand(transf);
             setBlockedState(true, "Sending files...");
-            transferHelperService.queueReadyCallback(() -> {
+            transferHelperService.queueCommandCallback(KnownCommands.Ready, command -> {
                 Factory.getPipelineManager().setup(PipelineSetup.FILE.handlers);
                 for (ChunkedFile chunkedFile : chunkedFiles) {
                     networkService.sendFile(chunkedFile);
                 }
                 Factory.getPipelineManager().setup(PipelineSetup.COMMAND.handlers);
             });
-            transferHelperService.queueReadyCallback(() -> {
+            transferHelperService.queueCommandCallback(KnownCommands.Ready, command -> {
                 setBlockedState(false, "Sending complete.");
                 localStructureRequest();
             });
@@ -327,34 +327,6 @@ public class PrimaryController implements Initializable, ControllerService {
         setBlockedState(true, "Downloading...");
         Command req = new Command(KnownCommands.FileRequest, requestedFiles);
         networkService.sendCommand(req);
-    }
-
-    //TODO doesn't work for directories for now
-    private void onContextDownloadOld(ActionEvent event, ObservableList<String> selectedItems) {
-        if (selectedItems.isEmpty()) {
-            System.err.println("Selection is empty");
-            return;
-        }
-        FileTransferHelperService helperService = Factory.getFileTransferService();
-        DirectoryChooser directoryChooser = new DirectoryChooser();
-        File file = directoryChooser.showDialog(App.getWindow());
-
-        List<String> filesToReceive = new ArrayList<>();
-        for (String selectedItem : selectedItems) {
-            if (isDirectory(selectedItem)) {
-                System.err.println("directories unsupported");
-                return;
-            }
-            Path fileResultPath = file.toPath().resolve(selectedItem);
-            long length = shownItems.get(selectedItem);
-            helperService.queueFileReceive(fileResultPath, length);
-            filesToReceive.add(currentPath.resolve(selectedItem).toString());
-        }
-        Command fileRequest = new Command(KnownCommands.FileRequest, filesToReceive);
-        Factory.getPipelineManager().setup(PipelineSetup.FILE.handlers);
-        Factory.getNetworkService().sendCommand(fileRequest);
-        setBlockedState(true, "Downloading...");
-        // File Inbound handler turns back to commands when finishes
     }
 
     private void onContextDelete(ActionEvent event, ObservableList<String> selectedItems) {

@@ -19,7 +19,7 @@ import java.nio.file.attribute.BasicFileAttributes;
 import java.util.ArrayList;
 import java.util.List;
 
-public class FileRequestCommand implements CommandService {
+public class FileRequest implements CommandService {
     @Override
     public void processCommand(ChannelHandlerContext ctx, Command command) {
         verifyArgs(command);
@@ -74,7 +74,7 @@ public class FileRequestCommand implements CommandService {
             Command transf = new Command(KnownCommands.FileTransfer, filesToSend);
             ctx.writeAndFlush(transf);
 
-            transferHelperService.queueReadyCallback(() -> {
+            transferHelperService.queueCommandCallback(KnownCommands.Ready, c -> {
                 Counter counter = new Counter(chunkedFiles.size(), () -> responseAfterAllWritingDone(ctx));
                 Factory.getPipelineManager().setup(PipelineSetup.FILE.handlers);
                 for (ChunkedFile chunkedFile : chunkedFiles) {
@@ -97,7 +97,7 @@ public class FileRequestCommand implements CommandService {
 
     private void responseAfterAllWritingDone(ChannelHandlerContext ctx) {
         Factory.getPipelineManager().setup(PipelineSetup.COMMAND.handlers);
-        Factory.getFileTransferService().queueReadyCallback(() -> ctx.writeAndFlush(new Command(KnownCommands.Ready)));
+        Factory.getFileTransferService().queueCommandCallback(KnownCommands.Ready, c -> ctx.writeAndFlush(new Command(KnownCommands.Ready)));
     }
 
 
@@ -109,8 +109,8 @@ public class FileRequestCommand implements CommandService {
     }
 
     @Override
-    public String getCommand() {
-        return KnownCommands.FileRequest.name;
+    public KnownCommands getCommand() {
+        return KnownCommands.FileRequest;
     }
 
     private class PathSimpleFileVisitor extends SimpleFileVisitor<Path> {

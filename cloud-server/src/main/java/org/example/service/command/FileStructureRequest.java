@@ -19,7 +19,7 @@ import java.util.List;
  * Second arg is length in bytes (long). Returns -1 as second arg for directories.
  * Then, first two args repeats for all entities.
  */
-public class FileStructureRequestCommand implements CommandService {
+public class FileStructureRequest implements CommandService {
     @Override
     public void processCommand(ChannelHandlerContext ctx, Command command) {
         try {
@@ -37,8 +37,8 @@ public class FileStructureRequestCommand implements CommandService {
     }
 
     @Override
-    public String getCommand() {
-        return KnownCommands.FileStructureRequest.name;
+    public KnownCommands getCommand() {
+        return KnownCommands.FileStructureRequest;
     }
 
     private static class PathSimpleFileVisitor extends SimpleFileVisitor<Path> {

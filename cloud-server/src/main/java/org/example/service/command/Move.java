@@ -10,7 +10,7 @@ import org.example.service.FileStorageService;
 import java.io.IOException;
 import java.nio.file.*;
 
-public class MoveCommand implements CommandService {
+public class Move implements CommandService {
     @Override
     public void processCommand(ChannelHandlerContext ctx, Command command) {
         verifyArgs(command);
@@ -32,7 +32,7 @@ public class MoveCommand implements CommandService {
     }
 
     @Override
-    public String getCommand() {
-        return KnownCommands.Move.name;
+    public KnownCommands getCommand() {
+        return KnownCommands.Move;
     }
 }

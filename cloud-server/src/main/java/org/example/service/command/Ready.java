@@ -7,15 +7,15 @@ import org.example.factory.Factory;
 import org.example.service.CommandService;
 import org.example.service.FileTransferHelperService;
 
-public class ReadyCommand implements CommandService {
+public class Ready implements CommandService {
     @Override
     public void processCommand(ChannelHandlerContext ctx, Command command) {
         FileTransferHelperService helperService = Factory.getFileTransferService();
-        helperService.triggerReady();
+        helperService.triggerNextCommandType(KnownCommands.Ready, command);
     }
 
     @Override
-    public String getCommand() {
-        return KnownCommands.Ready.name;
+    public KnownCommands getCommand() {
+        return KnownCommands.Ready;
     }
 }

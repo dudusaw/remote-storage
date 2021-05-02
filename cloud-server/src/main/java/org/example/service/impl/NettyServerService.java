@@ -1,5 +1,6 @@
 package org.example.service.impl;
 
+import org.example.domain.Command;
 import org.example.factory.Factory;
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.channel.ChannelFuture;
@@ -8,13 +9,22 @@ import io.netty.channel.EventLoopGroup;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioServerSocketChannel;
+import org.example.service.DBService;
 import org.flywaydb.core.Flyway;
 import org.example.service.PipelineSetup;
 import org.example.service.ServerService;
 
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.Properties;
 
 public class NettyServerService implements ServerService {
+
+    @Override
+    public void startServer() {
+        setupMigrations();
+        startServerAndWait();
+    }
 
     private void setupMigrations() {
         Properties prop = Factory.getConfigProperties();
@@ -22,16 +32,13 @@ public class NettyServerService implements ServerService {
         String user = prop.getProperty("dbUser");
         String password = prop.getProperty("dbPassword");
         Flyway flyway = Flyway.configure().dataSource(url, user, password).load();
+        flyway.repair();
         flyway.migrate();
     }
 
-    @Override
-    public void startServer() {
-        //setupMigrations();
-        startServerAndWait();
-    }
-
     private void startServerAndWait() {
+        Factory.getDbService().connectDBFromConfig();
+
         EventLoopGroup bossGroup = new NioEventLoopGroup(1);
         EventLoopGroup workerGroup = new NioEventLoopGroup();
 
@@ -58,6 +65,7 @@ public class NettyServerService implements ServerService {
         } finally {
             bossGroup.shutdownGracefully();
             workerGroup.shutdownGracefully();
+            Factory.getDbService().closeConnection();
         }
     }
 

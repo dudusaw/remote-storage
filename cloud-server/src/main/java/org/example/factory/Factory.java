@@ -1,11 +1,7 @@
 package org.example.factory;
 
 import org.example.service.*;
-import org.example.service.impl.CommandProcessor;
-import org.example.service.impl.FileTransferHelper;
-import org.example.service.impl.NettyServerService;
-import org.example.service.impl.PipelineManager;
-import org.example.service.impl.ServerFileStorage;
+import org.example.service.impl.*;
 
 import java.io.IOException;
 import java.util.*;
@@ -41,6 +37,10 @@ public class Factory {
 
     public static PipelineManagerService getPipelineManager() {
         return PipelineManager.Instance;
+    }
+
+    public static DBService getDbService() {
+        return DBManager.Instance;
     }
 
     private static void constructProperties() {

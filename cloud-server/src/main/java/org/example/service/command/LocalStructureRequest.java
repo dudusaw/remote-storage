@@ -24,7 +24,7 @@ import java.util.List;
  * Length in bytes as third arg. (-1 for dirs)
  * 2 and 3 args repeats for every entity.
  */
-public class LocalStructureRequestCommand implements CommandService {
+public class LocalStructureRequest implements CommandService {
     @Override
     public void processCommand(ChannelHandlerContext ctx, Command command) {
         try {
@@ -64,7 +64,7 @@ public class LocalStructureRequestCommand implements CommandService {
     }
 
     @Override
-    public String getCommand() {
-        return KnownCommands.LocalStructureRequest.name;
+    public KnownCommands getCommand() {
+        return KnownCommands.LocalStructureRequest;
     }
 }

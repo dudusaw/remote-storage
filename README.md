@@ -1,2 +1,2 @@
 # remote-storage
-check wiki
+check [wiki](https://github.com/dudusaw/remote-storage/wiki)

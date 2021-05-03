@@ -5,8 +5,8 @@ import java.util.List;
 
 public class Command implements Serializable {
 
-    private String commandName;
-    private String[] args;
+    private final String commandName;
+    private final String[] args;
 
     public Command(KnownCommands name, String... args) {
         this.commandName = name.name;

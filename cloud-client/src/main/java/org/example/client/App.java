@@ -35,7 +35,7 @@ public class App extends Application {
         stage.show();
     }
 
-    static Window getWindow() {
+    public static Window getWindow() {
         return scene.getWindow();
     }
 

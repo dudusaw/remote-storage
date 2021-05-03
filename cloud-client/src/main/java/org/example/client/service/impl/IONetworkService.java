@@ -49,11 +49,6 @@ public class IONetworkService implements NetworkService {
         new Thread(() -> connectToServerAndWait(host, port, onResult)).start();
     }
 
-    @Override
-    public void setupPipeline(PipelineSetup setup) {
-        Factory.getPipelineManager().setup(setup.handlers);
-    }
-
     private void connectToServerAndWait(String host, int port, Consumer<Boolean> onResult) {
         EventLoopGroup workerGroup = new NioEventLoopGroup(1);
 

@@ -1,6 +1,9 @@
 package org.example.client.factory;
 
-import org.example.client.service.*;
+import org.example.client.service.ClientFileManagerService;
+import org.example.client.service.ContextMenuService;
+import org.example.client.service.ControllerService;
+import org.example.client.service.NetworkService;
 import org.example.client.service.impl.*;
 import org.example.service.CommandProcessService;
 import org.example.service.FileStorageService;
@@ -39,6 +42,14 @@ public class Factory {
 
     public static CommandProcessService getCommandProcessor() {
         return ClientCommandProcessor.Instance;
+    }
+
+    public static ContextMenuService getContextMenuService() {
+        return ContextMenuManager.Instance;
+    }
+
+    public static ClientFileManagerService getFileManagerService() {
+        return ClientFileManager.Instance;
     }
 
     public static void setControllerService(ControllerService controllerService) {

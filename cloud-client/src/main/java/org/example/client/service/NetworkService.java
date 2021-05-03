@@ -15,6 +15,4 @@ public interface NetworkService {
 
     void connectWithCallback(String host, int port, Consumer<Boolean> onResult);
 
-    void setupPipeline(PipelineSetup setup);
-
 }

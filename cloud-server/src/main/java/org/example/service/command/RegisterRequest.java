@@ -15,6 +15,10 @@ public class RegisterRequest implements CommandService {
         DBService dbService = Factory.getDbService();
         String login = command.getArgs()[0];
         String password = command.getArgs()[1];
+        if (login.length() < 3 || password.length() < 3) {
+            ctx.writeAndFlush(new Command(KnownCommands.Fail, "Login or password is too short (min 3 symbols)."));
+            return;
+        }
         try {
             dbService.createUser(login, password);
             ctx.writeAndFlush(new Command(KnownCommands.Ready));

@@ -8,7 +8,6 @@ public class DoubleClickChecker {
 
     public DoubleClickChecker(int delayMillis) {
         this.delay = delayMillis;
-        lastClickedItem = "";
     }
 
     /**
@@ -16,7 +15,7 @@ public class DoubleClickChecker {
      */
     public boolean check(String item) {
         boolean result = false;
-        if (!lastClickedItem.equals(item)) {
+        if (!item.equals(lastClickedItem)) {
             checkedOneTime = false;
         }
         if (!checkedOneTime) {

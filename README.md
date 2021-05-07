@@ -1,7 +1,7 @@
 # remote-storage
 check [wiki](https://github.com/dudusaw/remote-storage/wiki)
 
-what's used:
+used:
 * Java
 * Netty
 * PostgreSQL (JDBC)
